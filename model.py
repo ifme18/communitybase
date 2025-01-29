@@ -1,65 +1,64 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 
-class Events(db.Model):
-    __tablename__ = "events"
-    id = db.Column(db.Integer, primary_key=True)
-    eventname = db.Column(db.String(100), nullable=False)
-    eventDate = db.Column(db.DateTime, nullable=False)
+class Community(db.Model):
+    __tablename__ = 'community'
     
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(200))
     
-    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=False)
-    community = db.relationship('Community', backref=db.backref('events', lazy=True))
-
-    def __repr__(self):
-        return f'<Event {self.id}: {self.eventname}>'
+    # Relationships
+    users = db.relationship('User', backref='community', lazy=True)
+    events = db.relationship('Event', backref='community', lazy=True)
+    estates = db.relationship('Estate', backref='community', lazy=True)
+    notifications = db.relationship('Notification', backref='community', lazy=True)
 
 class User(db.Model):
+    __tablename__ = 'user'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    occupation = db.Column(db.String(100))
+    phoneno = db.Column(db.Integer)
+    houseno = db.Column(db.Integer)
+    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=False)
+    
+   
+    estates = db.relationship('Estate', backref='user', lazy=True)
+    notifications = db.relationship('Notification', backref='user', lazy=True)
+
+class Event(db.Model):
+    __tablename__ = 'events'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    eventname = db.Column(db.String(200), nullable=False)
+    eventdate = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=False)
+
+class Estate(db.Model):
+    __tablename__ = 'estate'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    estatename = db.Column(db.String(200), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=False)
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
-    phoneno = db.Column(db.String(20), nullable=True)
-    email = db.Column(db.String(300), unique=True, nullable=False)
-    occupation = db.Column(db.String(400), nullable=True)
-    houseno = db.Column(db.Integer, nullable=True)
-
-   
-    community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=True)
-    community = db.relationship('Community', backref=db.backref('users', lazy=True))
-    
-    def __repr__(self):
-        return f'<User {self.id}: {self.name}>'
-
-class Community(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(400), nullable=False)
-    location = db.Column(db.String(300), nullable=False)
-
-    def __repr__(self):
-        return f'<Community {self.id}: {self.name}>'
-
-class Notifications(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
-    
+    rsvp = db.Column(db.String(50))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('notifications', lazy=True))
-
-    def __repr__(self):
-        return f'<Notification {self.id}: {self.name}>'
-
-class Estates(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    estateName = db.Column(db.String(100), nullable=False)
-    
-    
     community_id = db.Column(db.Integer, db.ForeignKey('community.id'), nullable=False)
-    community = db.relationship('Community', backref=db.backref('estates', lazy=True))
 
-    def __repr__(self):
-        return f'<Estate {self.id}: {self.estateName}>'
+class RSVP(db.Model):
+    __tablename__ = 'rsvp'
+    
+    id = db.Column(db.String(50), primary_key=True)
    
 
